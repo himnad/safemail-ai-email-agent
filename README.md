@@ -148,3 +148,110 @@ These results were obtained during local development.
 | Agent orchestration | LangGraph |
 | API framework | FastAPI |
 | Dashboard |
+| Dashboard | HTML, CSS, JavaScript |
+| Email integration | Gmail API, Google OAuth |
+| Authorization | HMAC-signed tokens |
+| Testing | pytest |
+| Configuration | Environment variables |
+
+## Repository Structure
+
+- `agent/` — AI processing
+- `approval_service/` — Human approval and signed authorization
+- `gmail/` — Gmail integration
+- `graph/` — LangGraph workflows
+- `safemail/` — Secure gateway and policy enforcement
+- `tests/` — Automated security tests
+- `demo/` — Demonstration components
+- `requirements.txt` — Python dependencies
+
+## Installation
+
+### 1. Clone the repository
+
+```cmd
+git clone https://github.com/himnad/safemail-ai-email-agent.git
+cd safemail-ai-email-agent
+```
+
+### 2. Create a virtual environment
+
+```cmd
+py -m venv venv
+venv\Scripts\activate
+```
+
+### 3. Install dependencies
+
+```cmd
+python -m pip install -r requirements.txt
+```
+
+## Running Automated Tests
+
+For mocked tests, configure a placeholder Gemini API key:
+
+```cmd
+set GOOGLE_API_KEY=test-key-for-mocked-tests
+python -m pytest -q --tb=short
+```
+
+Verified local results:
+
+```text
+51 passed, 1 warning, 5 subtests passed
+```
+
+Run the signed-gateway integration tests:
+
+```cmd
+python -m pytest tests\test_signed_gateway_integration.py -v
+```
+
+Verified local results:
+
+```text
+7 passed
+```
+
+The seven integration tests are included in the complete test suite.
+
+The placeholder key is only suitable for mocked tests. Real Gemini requests require a valid API key.
+
+## Demonstration Dashboard
+
+The project includes a FastAPI demonstration dashboard.
+
+Example startup command:
+
+```cmd
+python -m uvicorn approval_service.app:app --host 127.0.0.1 --port 8000
+```
+
+Example local URL:
+
+http://127.0.0.1:8000/demo/login
+
+The dashboard startup instructions have not yet been independently verified in a clean environment. Additional configuration may be required.
+
+The demonstration uses sample emails and simulated actions, not proof of live Gmail delivery.
+
+## Security Limitations
+
+- Signing secrets must remain protected.
+- Human authorization is required for protected email actions.
+- The gateway validates authorization before execution.
+- One-time authorization consumption prevents replay.
+- AI-generated content requires human review.
+- Automated tests do not replace a comprehensive security audit.
+- Production deployment requires additional security hardening.
+
+## Why SafeMail Matters
+
+SafeMail demonstrates how AI agents can perform useful tasks without independently authorizing irreversible actions.
+
+**AI proposes. Humans authorize. The gateway enforces.**
+
+## License
+
+Licensed under the [MIT License](LICENSE).
