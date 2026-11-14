@@ -1,150 +1,150 @@
-# Email AI Agent
+# SafeMail AI Email Agent
 
-**AI-powered Gmail triage and reply drafting with LangGraph, Google Gemini, and human-in-the-loop approval.**
+**A security-first AI email agent designed to prevent unauthorized and irreversible autonomous actions.**
 
-[![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python)](https://www.python.org/)
-[![LangGraph](https://img.shields.io/badge/Workflow-LangGraph-blueviolet)](https://github.com/langchain-ai/langgraph)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+SafeMail combines Google Gemini, LangGraph, human-in-the-loop approval, cryptographically signed authorization, and a secure execution gateway to protect email operations.
 
-**[Try the Streamlit demo](https://email-ai-agent-eqmi8z5twq97kwglgfdi2g.streamlit.app)** · **[View source](https://github.com/himnad/email-ai-agent)**
+**AI can analyze and draft emails, but it cannot authorize its own actions.**
 
-## Overview
+## AI Safety Challenge
 
-Email AI Agent helps triage incoming Gmail messages and draft appropriate replies. It uses Google Gemini for classification and generation, while **keeping a human approval step before any generated reply is sent**.
+**Challenge:** Prevent Irreversible Autonomous Actions
 
-The repository includes a Gmail-integrated application and a separate Streamlit demonstration. The demo is intended to showcase the workflow; **do not assume the public demo sends real emails**.
+**Project repository:** https://github.com/himnad/safemail-ai-email-agent
 
-## Features
+### The Problem
 
-- Read unread messages using the Gmail API.
-- Classify messages into `NEEDS_REPLY`, `FYI`, and `ACTION_NEEDED`.
-- Generate concise, professional reply drafts with Gemini.
-- Request human approval before sending generated replies.
-- Send approved replies via the Gmail API; rejected drafts are not sent.
-- Explain follow-up actions for action-oriented emails.
-- Handle AI/API failures without treating failed operations as successful.
-- Orchestrate branching decisions with LangGraph.
-- Include tests using mocked external services.
+AI agents can perform useful tasks such as reading emails, generating replies, and interacting with external services. However, allowing an AI agent to execute sensitive actions without proper authorization introduces serious security risks.
 
-## Workflow
+Examples include:
+
+- Sending an email without human approval.
+- Modifying the recipient after approval.
+- Changing the email subject or body.
+- Reusing an authorization token.
+- Forging authorization to bypass human review.
+
+SafeMail addresses these risks by separating AI-generated decisions from the authority to execute them.
+
+## Key Features
+
+### 1. AI-Powered Email Processing
+
+- Uses Google Gemini for email analysis and reply generation.
+- Uses LangGraph to organize the email-processing workflow.
+- Supports Gmail integration through the Gmail API and OAuth.
+- Keeps AI-generated output separate from execution authorization.
+
+### 2. Human-in-the-Loop Approval
+
+Sensitive email actions require explicit human authorization.
+
+- AI prepares the proposed action.
+- A human reviews the request.
+- Approved requests can receive signed authorization.
+- Rejected or unauthorized requests cannot obtain valid execution authorization.
+
+### 3. Cryptographically Signed Authorization
+
+SafeMail uses HMAC-based authorization tokens to protect approved actions.
+
+The gateway validates:
+
+- Authorization signature
+- Trusted issuer
+- Intended audience
+- Issue time and expiration
+- Exact recipient
+- Exact email subject
+- Exact email body
+
+Changing the approved email content invalidates authorization.
+
+### 4. Replay Protection
+
+Authorization is designed for one-time use.
+
+The gateway atomically consumes the stored authorization record to prevent the same authorization from being reused.
+
+### 5. Secure Execution Gateway
+
+Sensitive email execution is controlled through a dedicated gateway.
+
+The gateway verifies authorization before permitting the approved action.
+
+Invalid, expired, tampered, forged, or previously consumed authorization is rejected.
+
+### 6. Interactive Demonstration Dashboard
+
+The project includes a FastAPI-based demonstration dashboard with:
+
+- Sample emails
+- AI-powered analysis
+- Simulated approval and rejection
+- Dynamic card updates using JavaScript
+- A demonstration workflow separate from real Gmail sending
+
+The demonstration interface is not evidence that a real Gmail message was sent.
+
+## Security Architecture
 
 ```mermaid
 flowchart TD
-    A[Gmail inbox] --> B[Read unread emails]
-    B --> C[Gemini classification]
-    C --> D{Triage result}
-    D -->|NEEDS_REPLY| E[Generate reply draft]
-    D -->|FYI| F[No reply needed]
-    D -->|ACTION_NEEDED| G[Explain required action]
-    E --> H{Human review}
-    H -->|Approve| I[Send via Gmail API]
-    H -->|Reject| J[Do not send]
+    A[Incoming Email] --> B[AI Analysis]
+    B --> C[Proposed Email Action]
+    C --> D{Human Approval}
+    D -->|Rejected| E[Action Blocked]
+    D -->|Approved| F[Issue Signed Authorization]
+    F --> G[Secure Execution Gateway]
+    G --> H{Validate Authorization}
+    H -->|Invalid| I[Reject Execution]
+    H -->|Valid| J[Atomically Consume Authorization]
+    J --> K{Consumption Successful?}
+    K -->|No| I
+    K -->|Yes| L[Execute Authorized Action]
 ```
 
-**Safety principle:** AI generates drafts; a person decides whether to send them.
+**Core safety principle:** AI proposes. Humans authorize. The gateway enforces.
 
-## Tech Stack
+## Security Testing
 
-| Area | Technology |
-| --- | --- |
-| Language | Python |
-| Workflow orchestration | LangGraph |
-| LLM | Google Gemini (`langchain-google-genai` / Google Gen AI SDK) |
-| Email integration | Gmail API, Google OAuth |
-| Public demo | Streamlit |
-| Configuration | `python-dotenv` |
-| Testing | Python test modules and mocked integrations |
+The project includes automated unit, adversarial, and integration tests.
 
-## Repository Structure
+### Verified local results
+
+**General test suite:**
 
 ```text
-email-agent/
-├── agent/                 # LLM and agent logic
-├── gmail/                 # Gmail service integration
-├── graph/                 # LangGraph workflows
-├── tools/                 # Email-related tools
-├── ui/                    # Application UI
-├── web_app/               # Web app and OAuth integration
-├── demo/                  # Streamlit demo and its requirements
-├── tests/                 # Tests
-├── main.py                # Application entry point
-├── requirements.txt       # Main app dependencies
-├── README.md
-└── LICENSE
+51 passed, 5 subtests passed
 ```
 
-## Getting Started
+**Signed-gateway integration tests:**
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/himnad/email-ai-agent.git
-cd email-ai-agent
+```text
+7 passed
 ```
 
-### 2. Create a virtual environment
+These results were obtained during local development.
 
-**Windows CMD:**
+### Tested Security Scenarios
 
-```cmd
-py -m venv venv
-venv\Scripts\activate
-```
+| Security scenario | Expected behavior |
+|---|---|
+| Valid signed authorization | Authorized mock send succeeds once |
+| Modified recipient | Execution rejected |
+| Modified subject | Execution rejected |
+| Modified email body | Execution rejected |
+| Modified authorization key | Execution rejected |
+| Forged authorization token | Execution rejected |
+| Unapproved request | Cannot issue valid authorization |
+| Reused authorization | Prevented by one-time consumption |
 
-### 3. Install dependencies
+## Technology Stack
 
-For the main application:
-
-```cmd
-pip install -r requirements.txt
-```
-
-For the Streamlit demo (in the same or a separate virtual environment):
-
-```cmd
-pip install -r demo\requirements.txt
-```
-
-### 4. Configure credentials for Gmail-integrated mode
-
-The real Gmail-integrated application requires appropriate Google Cloud Gmail API/OAuth configuration and Gemini API access. Configure the credentials and environment variables expected by your local application code before running it.
-
-**Never commit API keys, OAuth client secrets, access/refresh tokens, or private email content.** Keep secrets in local environment variables or ignored files. Google OAuth redirect URIs must match the URI configured for the application.
-
-### 5. Run the public-style demo locally
-
-```cmd
-streamlit run demo\app.py
-```
-
-The demo and Gmail-integrated application are different execution paths. Demo behavior should not be presented as proof that real Gmail sending or OAuth is deployed publicly.
-
-## Testing
-
-The repository includes `tests/test_graph.py` for graph-related testing. Run it using the test runner configured in your environment; for example, if `pytest` is installed:
-
-```cmd
-python -m pytest tests\test_graph.py
-```
-
-This command has not been verified against every environment; install any missing test dependencies as needed.
-
-## Security and Limitations
-
-- Human approval is required before sending AI-generated drafts.
-- Review generated content for accuracy and tone before approving.
-- Do not expose Gmail credentials or tokens in the public repository.
-- The Streamlit demo is a showcase; the real Gmail integration needs separate authorization and configuration.
-- Gmail OAuth access may be restricted by Google Cloud app publishing or test-user settings.
-- AI classification and drafts can be incorrect; they require user oversight.
-
-## Roadmap
-
-- [ ] Add architecture and UI screenshots.
-- [ ] Document exact OAuth setup and entry-point commands after verification.
-- [ ] Add CI checks for the existing test suite.
-- [ ] Add an example environment configuration with placeholder values only.
-
-## License
-
-Licensed under the [MIT License](LICENSE). Third-party packages and services retain their own licenses and terms.
+| Component | Technology |
+|---|---|
+| Programming language | Python |
+| AI model | Google Gemini |
+| Agent orchestration | LangGraph |
+| API framework | FastAPI |
+| Dashboard |
