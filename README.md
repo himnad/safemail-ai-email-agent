@@ -258,6 +258,32 @@ All public demo emails are synthetic. Approval simulates sending; it does not se
 
 ### SafeMail Security Evidence
 
+### Screenshot Evidence (Local Development)
+
+The following screenshots were captured during local development. They show mocked test outcomes and a simulated reviewer interface; they do **not** demonstrate live Gmail delivery or prove that the dashboard's simulated approval buttons exercise the cryptographic gateway.
+
+**Complete pytest suite — 51 passed, 1 warning, 5 subtests passed**
+
+![Local full test suite results](docs/evidence/01-full-test-suite.png)
+
+**Signed-gateway integration tests — 7 passed** (authorized mocked send, modified recipient/subject/body/key, forged token, and unapproved request)
+
+![Local signed gateway security tests](docs/evidence/02-security-tests.png)
+
+**SafeMail Approval Center — login and public demo entry**
+
+![SafeMail Approval Center](docs/evidence/03-approval-center.png)
+
+**Interviewer demo login — simulated environment**
+
+![Interviewer demo login](docs/evidence/04-demo-login.png)
+
+**Interviewer dashboard — sample email awaiting review** (real Gmail connection and sending disabled)
+
+![Simulated SafeMail interviewer dashboard](docs/evidence/05-demo-dashboard.png)
+
+[Browse all evidence images](docs/evidence/)
+
 The SafeMail repository provides security implementation code and automated tests covering signed authorization, tampering detection, and authorization misuse.
 
 Reviewers can inspect and run the tests to evaluate the gateway behavior independently.
